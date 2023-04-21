@@ -65,6 +65,30 @@ queryClient.queryRows(fluxQuery, {
 })
 
 
+app.get('/query', (req, res) => {
+let data = ''
+  queryClient = client.getQueryApi(org)
+fluxQuery = `from(bucket: "my-bucket")
+ |> range(start: -120m)
+ |> filter(fn: (r) => r._measurement == "measurement1")
+ |> mean()`
+
+queryClient.queryRows(fluxQuery, {
+  next: (row, tableMeta) => {
+    const tableObject = tableMeta.toObject(row)
+    
+    data = data + JSON.stringify(tableObject) + '<br/>'
+  },
+  error: (error) => {
+    res.send('Error!')
+  },
+  complete: () => {
+    res.send('Success: <hr/>' + data)
+  },
+})
+})
+
+
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`)
